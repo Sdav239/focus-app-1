@@ -1,6 +1,8 @@
 const DURATIONS = { focus: 25 * 60, break: 5 * 60, longBreak: 15 * 60 };
 const MODE_LABELS = { focus: 'Focus session', break: 'Short break', longBreak: 'Long break' };
 const STORAGE_KEY = 'focus-completed-sessions';
+const BREAK_STORAGE_KEY = 'focus-completed-breaks';
+const THEME_STORAGE_KEY = 'focus-dark-mode';
 
 const timerDisplay = document.querySelector('#timerDisplay');
 const startButton = document.querySelector('#startButton');
@@ -11,11 +13,31 @@ const modeDot = document.querySelector('#modeDot');
 const statusLabel = document.querySelector('#statusLabel');
 const progressBar = document.querySelector('#progressBar');
 const timerCard = document.querySelector('#timerCard');
+const themeToggle = document.querySelector('#themeToggle');
+const breakLights = document.querySelectorAll('.break-light');
 
 let currentMode = 'focus';
 let remainingSeconds = DURATIONS.focus;
 let timerId = null;
 let completedSessions = loadSessions();
+let completedBreaks = loadBreaks();
+
+function loadTheme() {
+  const darkMode = localStorage.getItem(THEME_STORAGE_KEY) === 'true';
+  document.body.classList.toggle('dark-mode', darkMode);
+  themeToggle.setAttribute('aria-pressed', String(darkMode));
+  themeToggle.setAttribute('aria-label', darkMode ? 'Turn off dark mode' : 'Turn on dark mode');
+  themeToggle.title = darkMode ? 'Light mode' : 'Dark mode';
+}
+
+function toggleTheme() {
+  const darkMode = !document.body.classList.contains('dark-mode');
+  document.body.classList.toggle('dark-mode', darkMode);
+  localStorage.setItem(THEME_STORAGE_KEY, String(darkMode));
+  themeToggle.setAttribute('aria-pressed', String(darkMode));
+  themeToggle.setAttribute('aria-label', darkMode ? 'Turn off dark mode' : 'Turn on dark mode');
+  themeToggle.title = darkMode ? 'Light mode' : 'Dark mode';
+}
 
 function loadSessions() {
   const saved = Number.parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
@@ -24,6 +46,15 @@ function loadSessions() {
 
 function saveSessions() {
   localStorage.setItem(STORAGE_KEY, String(completedSessions));
+}
+
+function loadBreaks() {
+  const saved = Number.parseInt(localStorage.getItem(BREAK_STORAGE_KEY) || '0', 10);
+  return Number.isFinite(saved) && saved >= 0 ? saved : 0;
+}
+
+function saveBreaks() {
+  localStorage.setItem(BREAK_STORAGE_KEY, String(completedBreaks));
 }
 
 function formatTime(seconds) {
@@ -37,6 +68,12 @@ function updateDisplay() {
   document.title = `${formatTime(remainingSeconds)} - ${MODE_LABELS[currentMode]} | FOCUS`;
   const progress = (remainingSeconds / DURATIONS[currentMode]) * 100;
   progressBar.style.width = `${progress}%`;
+}
+
+function updateBreakCount() {
+  breakLights.forEach((light, index) => {
+    light.classList.toggle('used', index < completedBreaks);
+  });
 }
 
 function setMode(mode) {
@@ -57,6 +94,9 @@ function setMode(mode) {
 
 function startTimer() {
   if (timerId) return;
+  completedBreaks = Math.min(completedBreaks + 1, breakLights.length);
+  saveBreaks();
+  updateBreakCount();
   statusLabel.textContent = 'In progress';
   startButton.textContent = 'Running';
   startButton.disabled = true;
@@ -86,6 +126,9 @@ function pauseTimer() {
 
 function resetTimer() {
   setMode(currentMode);
+  completedBreaks = 0;
+  saveBreaks();
+  updateBreakCount();
   statusLabel.textContent = 'Not started';
 }
 
@@ -99,7 +142,6 @@ function completeTimer() {
   if (currentMode === 'focus') {
     completedSessions += 1;
     saveSessions();
-    updateSessionDisplay();
   }
   window.setTimeout(() => {
     const nextMode = currentMode === 'focus' ? 'break' : 'focus';
@@ -110,8 +152,11 @@ function completeTimer() {
 startButton.addEventListener('click', startTimer);
 pauseButton.addEventListener('click', pauseTimer);
 resetButton.addEventListener('click', resetTimer);
+themeToggle.addEventListener('click', toggleTheme);
 document.querySelectorAll('.mode-button').forEach((button) => {
   button.addEventListener('click', () => setMode(button.dataset.mode));
 });
 
 updateDisplay();
+updateBreakCount();
+loadTheme();
