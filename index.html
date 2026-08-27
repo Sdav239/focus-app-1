@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f3f3f3">
+  <title>FOCUS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="workspace" aria-labelledby="pageTitle">
+      <div class="intro">
+        <h1 id="pageTitle">Stay focused.</h1>
+      </div>
+
+      <div class="timer-card" id="timerCard">
+        <div class="timer-heading">
+          <span class="mode-dot" id="modeDot"></span>
+          <span id="modeLabel">Focus session</span>
+          <span class="status-label" id="statusLabel">Not started</span>
+        </div>
+        <div class="timer-display" id="timerDisplay" role="timer" aria-live="polite">25:00</div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="timer-controls">
+          <button class="button button-primary" id="startButton" type="button">Start</button>
+          <button class="button button-secondary" id="pauseButton" type="button" disabled>Pause</button>
+          <button class="button button-secondary" id="resetButton" type="button">Reset</button>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="mode-section" aria-labelledby="modeTitle">
+      <div class="mode-section-heading">
+        <h2 id="modeTitle">Timer modes</h2>
+      </div>
+      <div class="mode-picker" role="group" aria-label="Timer modes">
+        <button class="mode-button active" data-mode="focus" type="button"><span class="mode-button-title">Focus</span><span>25 min</span></button>
+        <button class="mode-button" data-mode="break" type="button"><span class="mode-button-title">Short break</span><span>5 min</span></button>
+        <button class="mode-button" data-mode="longBreak" type="button"><span class="mode-button-title">Long break</span><span>15 min</span></button>
+      </div>
+    </section>
+
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
